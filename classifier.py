@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import numpy as np
 import cv2
 
@@ -17,7 +18,7 @@ count_ = len(contours_)
 print(count_)
 
 whole_shape = np.zeros(img.shape, np.uint8)
-cv2.drawContours(whole_shape, [contours_[0]], 0, 255, -1)
-cv2.drawContours(whole_shape, [contours_[0]], 0, 0, 2)
+cv2.drawContours(whole_shape, contours_, 0, 255, -1)
+cv2.drawContours(whole_shape, contours_, 0, 0, 2)
 cv2.imwrite('out/contours.png', whole_shape)
 cv2.imwrite('out/card1.png', img)
