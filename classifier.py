@@ -2,7 +2,7 @@
 import numpy as np
 import cv2
 
-original_img = cv2.imread('data/card9.png')
+original_img = cv2.imread('data/card1.png')
 
 # Process Image
 kernel = np.ones((2,2), np.uint8)
@@ -42,10 +42,36 @@ cv2.imwrite('out/bg_shape_mask.png', bg_shape_mask)
 
 # Guess color (Works!)
 hsv_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
-hue = cv2.mean(hsv_img, inside_shape_mask)[0]
+hue, saturation_inside = cv2.mean(hsv_img, inside_shape_mask)[0:2]
 if hue >= 100 and hue <= 160:
 	print("Purple")
 elif hue >= 50 and hue < 100:
 	print("Green")
 else:
 	print("Red")
+
+# Guessing the fill
+saturation_outside=cv2.mean(hsv_img, outside_shape_mask)[1]
+saturation_background=cv2.mean(hsv_img, bg_shape_mask)[1]
+print("Inside saturation: " + str(saturation_inside))
+print("Outside saturation: " + str(saturation_outside))
+print("Background saturation: " + str(saturation_background))
+diff_io=abs(saturation_inside-saturation_outside)
+diff_ib=abs(saturation_inside-saturation_background)
+diff_ob=abs(saturation_outside-saturation_background)
+if diff_io - diff_ib < 5: # Works for the 12 cards in data but more exhaustive tests preferred
+	print("Open")
+elif diff_ib > 10:
+	print("Filled")
+else:
+	print("Striped")
+
+# Guessing shape
+# TODO: Fix bug. Perhaps thresholding will work
+OVAL=cv2.imread("data/oval.png")
+DIAMOND=cv2.imread("data/diamond.png")
+SQUIGGLE=cv2.imread("data/squiggle.png")
+SHAPES=[OVAL, DIAMOND, SQUIGGLE]
+for shape in SHAPES:
+	_, shape_contours, __ = cv2.findContours(shape, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	print(cv2.matchShapes(inner_contours[0], shape_contours[0] , 1, 0.0))
