@@ -28,4 +28,3 @@ imwrite('out/mask0.png', mask)
 # Finding line segments 
 edges = Canny(mask, 100, 200) # Canny edge detection
 imwrite('out/edges.png', edges)
-
