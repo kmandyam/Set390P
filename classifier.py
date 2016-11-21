@@ -13,6 +13,7 @@ ret,img = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)
 # Find Contours
 _, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 inner_contours = [c for c, h in zip(contours, hierarchy[0]) if h[3] == 0]
+print(inner_contours)
 
 # Filter Contours by size
 inner_contours=list(filter(lambda c: cv2.contourArea(c) >= 50 and cv2.contourArea(c) < original_img.size / 3, inner_contours))
@@ -43,6 +44,7 @@ cv2.imwrite('out/bg_shape_mask.png', bg_shape_mask)
 # Guess color (Works!)
 hsv_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
 hue, saturation_inside = cv2.mean(hsv_img, inside_shape_mask)[0:2]
+print("Color: ", end = ' ')
 if hue >= 100 and hue <= 160:
 	print("Purple")
 elif hue >= 50 and hue < 100:
@@ -53,12 +55,10 @@ else:
 # Guessing the fill
 saturation_outside=cv2.mean(hsv_img, outside_shape_mask)[1]
 saturation_background=cv2.mean(hsv_img, bg_shape_mask)[1]
-print("Inside saturation: " + str(saturation_inside))
-print("Outside saturation: " + str(saturation_outside))
-print("Background saturation: " + str(saturation_background))
 diff_io=abs(saturation_inside-saturation_outside)
 diff_ib=abs(saturation_inside-saturation_background)
 diff_ob=abs(saturation_outside-saturation_background)
+print("Filling: ", end = ' ')
 if diff_io - diff_ib < 5: # Works for the 12 cards in data but more exhaustive tests preferred
 	print("Open")
 elif diff_ib > 10:
@@ -68,10 +68,26 @@ else:
 
 # Guessing shape
 # TODO: Fix bug. Perhaps thresholding will work
-OVAL=cv2.imread("data/oval.png")
-DIAMOND=cv2.imread("data/diamond.png")
-SQUIGGLE=cv2.imread("data/squiggle.png")
-SHAPES=[OVAL, DIAMOND, SQUIGGLE]
-for shape in SHAPES:
-	_, shape_contours, __ = cv2.findContours(shape, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-	print(cv2.matchShapes(inner_contours[0], shape_contours[0] , 1, 0.0))
+#OVAL=cv2.imread("data/oval.png")
+#DIAMOND=cv2.imread("data/diamond.png")
+#SQUIGGLE=cv2.imread("data/squiggle.png")
+#SHAPES=[OVAL, DIAMOND, SQUIGGLE]
+#for shape in SHAPES:
+#	_, thresh=cv2.threshold(shape, 127, 255, cv2.THRESH_BINARY)
+#	_, shape_contours, _1 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#	print(shape_contours, inner_contours)
+#	print(cv2.matchShapes(inner_contours[0], shape_contours[0] , 1, 0.0))
+SQUIGGLE = cv2.imread('data/squiggle.png',0) # 0 for grayscale mode 
+OVAL = cv2.imread('data/oval.png',0)
+DIAMOND = cv2.imread("data/diamond.png",0)
+SQUIGGLE = cv2.threshold(SQUIGGLE, 200, 255, cv2.THRESH_BINARY)[1]
+OVAL = cv2.threshold(OVAL, 200, 255, cv2.THRESH_BINARY)[1]
+DIAMOND = cv2.threshold(DIAMOND, 200, 255, cv2.THRESH_BINARY)[1]
+_, contours, hierarchy = cv2.findContours(SQUIGGLE, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+print(contours)
+contours=list(filter(lambda c: cv2.contourArea(c) >= 50, contours))
+
+print(contours)
+
+#ret = cv2.matchShapes(cnt1,cnt2,1,0.0)
+#print(ret)
