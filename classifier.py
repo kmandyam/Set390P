@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 import numpy as np
 import cv2
-
-original_img = cv2.imread('data/card1.png')
+name_img= 'card1'
+original_img = cv2.imread('data/' + name_img +'.png')
 
 # Process Image
 kernel = np.ones((2,2), np.uint8)
@@ -44,7 +44,8 @@ cv2.imwrite('out/bg_shape_mask.png', bg_shape_mask)
 # Guess color (Works!)
 hsv_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
 hue, saturation_inside = cv2.mean(hsv_img, inside_shape_mask)[0:2]
-print("Color: ", end = ' ')
+print(hue)
+print("Color: ", end = '')
 if hue >= 100 and hue <= 160:
 	print("Purple")
 elif hue >= 50 and hue < 100:
@@ -67,27 +68,19 @@ else:
 	print("Striped")
 
 # Guessing shape
-# TODO: Fix bug. Perhaps thresholding will work
-#OVAL=cv2.imread("data/oval.png")
-#DIAMOND=cv2.imread("data/diamond.png")
-#SQUIGGLE=cv2.imread("data/squiggle.png")
-#SHAPES=[OVAL, DIAMOND, SQUIGGLE]
-#for shape in SHAPES:
-#	_, thresh=cv2.threshold(shape, 127, 255, cv2.THRESH_BINARY)
-#	_, shape_contours, _1 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-#	print(shape_contours, inner_contours)
-#	print(cv2.matchShapes(inner_contours[0], shape_contours[0] , 1, 0.0))
-SQUIGGLE = cv2.imread('data/squiggle.png',0) # 0 for grayscale mode 
-OVAL = cv2.imread('data/oval.png',0)
-DIAMOND = cv2.imread("data/diamond.png",0)
-SQUIGGLE = cv2.threshold(SQUIGGLE, 200, 255, cv2.THRESH_BINARY)[1]
-OVAL = cv2.threshold(OVAL, 200, 255, cv2.THRESH_BINARY)[1]
-DIAMOND = cv2.threshold(DIAMOND, 200, 255, cv2.THRESH_BINARY)[1]
-_, contours, hierarchy = cv2.findContours(SQUIGGLE, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-print(contours)
-contours=list(filter(lambda c: cv2.contourArea(c) >= 50, contours))
+# Read the image again
+squiggle = cv2.imread('data/squiggle.png',0)
+oval = cv2.imread('data/oval.png', 0)
+diamond = cv2.imread('data/diamond.png', 0)
+img = cv2.imread('data/card3.png',0)
 
-print(contours)
+ret, thresh = cv2.threshold(oval, 127, 255,0)
+ret, thresh2 = cv2.threshold(img, 127, 255,0)
+ret, thresh3 = cv2.
+_, contours,hierarchy = cv2.findContours(thresh,2,1)
+cnt1 = contours[0]
+_, contours,hierarchy = cv2.findContours(thresh2,2,1)
+cnt2 = contours[0]
 
-#ret = cv2.matchShapes(cnt1,cnt2,1,0.0)
-#print(ret)
+ret = cv2.matchShapes(cnt1,cnt2,1,0.0)
+print(ret)

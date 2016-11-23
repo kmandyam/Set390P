@@ -1,5 +1,5 @@
 from solver import *
-
+import itertools
 # This file contains an example of how to use the necessary Z3 features
 # to write a set solver.
 
@@ -10,20 +10,29 @@ def CreateMagicSquare(size):
     # integer variable for each square.  We use a (nested) list comprehension for this:
 
     square = [[declare("(" + str(i) + ", " + str(j) + ")", T) for j in range(size)] for i in range(size)]
-    sum_a = sum_b = 0
+    flat_square=list(itertools.chain.from_iterable(square))
+    assume(Distinct(flat_square))
+    for i in flat_square:
+        assume(i >= 0)
+    sum_rows=[sum(ls) for ls in square]
+    print(sum_rows)
+    sum_columns=[sum(col) for col in zip(*square)]
+    sum_diagonals=[0, 0]
     for i in range(size):
-        test_eq = sum(square[i]) == sum(square[:][i])
-        print(simplify(test_eq))
-        assume(sum(square[i]) == sum(square[:][i]))
-        sum_a += square[i][i]
-        sum_b += square[size - 1 - i][i]
-    
+        sum_diagonals[0] += square[i][i]
+        sum_diagonals[1] += square[i][size - i - 1]
+    sum_all=[]
+    sum_all.extend(sum_rows)
+    sum_all.extend(sum_columns)
+    sum_all.extend(sum_diagonals)
+    magic_constant=sum_all[0]
+    for s in sum_all:
+        assume(s==magic_constant)
     # Distinct(-)
     # And(-), Or(-), Not(-), Implies(-)
-    assume(sum_a == sum_b)
     return solve(1)
 
-N = 3
+N = 4 
 print("-"*26)
 for square in CreateMagicSquare(N):
     print_2D_array(square, N)
