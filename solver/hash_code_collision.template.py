@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from solver import *
 
 def hashCode(s):
@@ -27,7 +28,6 @@ def collide(original, SIZE):
     return solve(100)
 
 
-print(BitVecSort(8))
 WORD = "deer"
 for i in range(len(WORD) + 1):
     print("Searching " + str(i) + "...")
