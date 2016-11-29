@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import numpy as np
 import cv2
-name_img= 'card1'
+
 def classify(name_img):
 	"""
 	Doctests to make testing easier
@@ -24,7 +24,7 @@ def classify(name_img):
 	Number: 1
 	Fill: Open
 
-	>>> classfify('card4')
+	>>> classify('card4')
 	Color: Red
 	Shape: Oval
 	Number: 3
@@ -89,7 +89,6 @@ def classify(name_img):
 	# Find Contours
 	_, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 	inner_contours = [c for c, h in zip(contours, hierarchy[0]) if h[3] == 0]
-	# print(inner_contours)
 
 	# Filter Contours by size
 	inner_contours=list(filter(lambda c: cv2.contourArea(c) >= 50 and cv2.contourArea(c) < original_img.size / 3, inner_contours))
@@ -120,7 +119,6 @@ def classify(name_img):
 	# Guess color (Works!)
 	hsv_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
 	hue, saturation_inside = cv2.mean(hsv_img, inside_shape_mask)[0:2]
-	print(hue)
 	print("Color: ", end = '')
 	if hue >= 100 and hue <= 160:
 		print("Purple")
@@ -135,29 +133,42 @@ def classify(name_img):
 	diff_io=abs(saturation_inside-saturation_outside)
 	diff_ib=abs(saturation_inside-saturation_background)
 	diff_ob=abs(saturation_outside-saturation_background)
-	print("Filling: ", end = ' ')
+	fill=''
 	if diff_io - diff_ib < 5: 
-		print("Open")
+		fill = "Open"
 	elif diff_ib > 10:
-		print("Filled")
+		fill = "Solid"
 	else:
-		print("Striped")
+		fill = "Striped"
 
 	# Guessing shape
 	# Read the image again
+	def find_contours(img):
+		ret, img = cv2.threshold(img, 127, 255, 0)
+		_, contours, hierarchy = cv2.findContours(img, 2, 1)
+		return contours[0]
+
 	squiggle = cv2.imread('data/squiggle.png',0)
 	oval = cv2.imread('data/oval.png', 0)
 	diamond = cv2.imread('data/diamond.png', 0)
 	img = cv2.imread('data/' + name_img +'.png',0)
 
-	ret, thresh = cv2.threshold(oval, 127, 255,0)
-	ret, thresh2 = cv2.threshold(img, 127, 255,0)
-	_, contours,hierarchy = cv2.findContours(thresh,2,1)
-	cnt1 = contours[0]
-	_, contours,hierarchy = cv2.findContours(thresh2,2,1)
-	cnt2 = contours[0]
+	ret, img = cv2.threshold(img, 127, 255, 0)
+	_, contours, hierarchy = cv2.findContours(img, 2, 1)
+	try:
+		in_contours = [c for c, h in zip(contours, hierarchy[0]) if h[3] == 0]
+		in_contours=list(filter(lambda c: cv2.contourArea(c) >= 50 and cv2.contourArea(c) < original_img.size / 3, in_contours))
+		img = in_contours[0]
+	except IndexError:
+		#print(hierarchy)
+		#print(contours)
+		pass
+	oval = find_contours(oval)
+	squiggle = find_contours(squiggle)
+	diamond = find_contours(diamond)
+	shapes = [(oval, 'Oval'), (squiggle, 'Squiggle'), (diamond, 'Diamond')]
+	shape = min(shapes, key = lambda x: cv2.matchShapes(x[0], img, 1, 0.0))[1]
+	print("Shape: " + shape)
+	print("Number: " + str(len(inner_contours)))
+	print("Fill: " + fill)
 
-	ret = cv2.matchShapes(cnt1,cnt2,1,0.0)
-		
-
-classify(name_img)

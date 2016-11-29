@@ -20,13 +20,21 @@ def collide(original, SIZE):
     reset()
     orig = get_bits(original)
 
+    def m2str(m):
+        if len(m):
+            m = m[0]
+            res = [m[i] for i in map(str, range(SIZE))]
+            return res
     # Fill me in!
     output=[]
     bit_vec = declare("bit_vec", BitVecSort(8))
     list_bv = [declare(str(i), BitVecSort(8)) for i in range(SIZE)]
     assume(hashCode(list_bv) == hashCode(orig))
-    return solve(100)
-
+    output.append(m2str(solve(1)))
+    temp = m2str(solve(1))
+    while not (temp in output):
+        output.append(temp)
+    return output
 
 WORD = "deer"
 for i in range(len(WORD) + 1):
