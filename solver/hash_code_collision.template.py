@@ -10,7 +10,7 @@ def hashCode(s):
 def is_letter(x):
     # Hint: ord is useful here
     # Fill me in!
-    return And(ord(x) >= ord('a') and ord(x) <= ord('z') or ord(x) >= ord('A') and ord(x) <= ord('Z')) 
+    return Or(And(x >= ord('a'), x <= ord('z')), And(x >= ord('A'), x <= ord('Z'))) 
 
 def get_bits(s):
     return [BitVecVal(ord(x), 8) for x in s]
@@ -21,19 +21,15 @@ def collide(original, SIZE):
     orig = get_bits(original)
 
     def m2str(m):
-        if len(m):
-            m = m[0]
-            res = [m[i] for i in map(str, range(SIZE))]
-            return res
+        res = ''.join([chr(m[i].as_long()) for i in map(str, range(SIZE))])
+        return res
     # Fill me in!
-    output=[]
-    bit_vec = declare("bit_vec", BitVecSort(8))
+    #bit_vec = declare("bit_vec", BitVecSort(8))
     list_bv = [declare(str(i), BitVecSort(8)) for i in range(SIZE)]
     assume(hashCode(list_bv) == hashCode(orig))
-    output.append(m2str(solve(1)))
-    temp = m2str(solve(1))
-    while not (temp in output):
-        output.append(temp)
+    for i in list_bv:
+       assume(is_letter(i))
+    output = list(map(m2str, solve()))
     return output
 
 WORD = "deer"

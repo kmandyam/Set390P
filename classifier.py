@@ -84,16 +84,19 @@ def classify(name_img):
 	# Process Image
 	kernel = np.ones((2,2), np.uint8)
 	img = cv2.morphologyEx(original_img, cv2.MORPH_OPEN, kernel)
+	img = cv2.erode(img, kernel, iterations=4)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	ret,img = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)
-
+	ret,img = cv2.threshold(img, 155, 255, cv2.THRESH_BINARY)
+	cv2.imwrite('out/thresh' + num + '.png', img)
 	# Find Contours
 	_, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 	inner_contours = [c for c, h in zip(contours, hierarchy[0]) if h[3] == 0]
 
 	# Filter Contours by size
 	inner_contours=list(filter(lambda c: cv2.contourArea(c) >= 50 and cv2.contourArea(c) < original_img.size / 3, inner_contours))
-
+	blank = np.zeros(img.shape, np.uint8)
+	cv2.drawContours(blank, inner_contours, -1, 255, -1)
+	cv2.imwrite('out/filter' + num + '.png', blank)
 	# Making sure number of shapes <= 3
 	assert len(inner_contours) <= 3 and len(inner_contours) > 0
 
@@ -101,6 +104,7 @@ def classify(name_img):
 	whole_contour = np.zeros(img.shape, np.uint8)
 	cv2.drawContours(whole_contour, inner_contours, 0, 255, -1)
 	cv2.drawContours(whole_contour, inner_contours, 0, 0, 2)
+	cv2.imwrite('out/whole_shape_mask' + num  + '.png', whole_contour)
 	contour_six = np.zeros(img.shape, np.uint8)
 	cv2.drawContours(contour_six, inner_contours, 0, 255, 6)
 	outside_shape_mask = cv2.bitwise_and(whole_contour, whole_contour, mask=contour_six)
@@ -117,7 +121,7 @@ def classify(name_img):
 	cv2.drawContours(bg_shape_mask, inner_contours, 0, 0, -1)
 	cv2.imwrite('out/bg_shape_mask'+ num + '.png', bg_shape_mask)
 
-	# Guess color (Works!)
+	# Guess color 
 	cv2.imwrite('out/color_mask' + num + '.png', cv2.bitwise_and(original_img, original_img,mask=outside_shape_mask))
 	print(cv2.mean(cv2.cvtColor(cv2.bitwise_and(original_img, original_img,mask=outside_shape_mask), cv2.COLOR_BGR2HSV), outside_shape_mask)[0])
 	hsv_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
