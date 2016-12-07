@@ -97,8 +97,6 @@ def classify(name_img):
 	blank = np.zeros(img.shape, np.uint8)
 	cv2.drawContours(blank, inner_contours, -1, 255, -1)
 	cv2.imwrite('out/filter' + num + '.png', blank)
-	# Making sure number of shapes <= 3
-	assert len(inner_contours) <= 3 and len(inner_contours) > 0
 
 	# Making Masks
 	whole_contour = np.zeros(img.shape, np.uint8)
